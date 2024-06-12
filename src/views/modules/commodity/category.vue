@@ -27,6 +27,9 @@
           >
             Delete
           </el-button>
+          <el-button type="text" size="mini" @click="edit(data)">
+            Edit
+          </el-button>
         </span>
       </span>
     </el-tree>
@@ -35,10 +38,16 @@
         <el-form-item label="分类名">
           <el-input v-model="category.name" autocomplete="off"></el-input>
         </el-form-item>
+        <el-form-item label="图标">
+          <el-input v-model="category.icon" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="单位">
+          <el-input v-model="category.proUnit" autocomplete="off"></el-input>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addCategory">确 定</el-button>
+        <el-button type="primary" @click="addOrUpdate">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -67,12 +76,15 @@ export default {
         proUnit: "",
         icon: "",
         id: null
-      }
+      },
+      dialogType: "", // edit add
+      updateNeedParentId: 0
     };
   },
   methods: {
     append(data) {
       this.dialogVisible = true;
+      this.dialogType = "add";
       this.category.parentId = data.id;
       //添加的分类为其父类的层级+1, 这里*1 是为了将字符串转成数值
       this.category.catLevel = data.catLevel * 1 + 1;
@@ -85,6 +97,13 @@ export default {
       this.category.isShow = 1;
       console.log("this.category= ", this.category);
     },
+    addOrUpdate() {
+      if (this.dialogType == "add") {
+        this.addCategory();
+      } else {
+        this.updateCategory();
+      }
+    },
     addCategory() {
       this.$http({
         url: "http://localhost:9090/commodity/category/save",
@@ -94,11 +113,30 @@ export default {
         this.$message({
           message: "分类信息保存成功",
           type: "success"
-        })
-        this.dialogVisible = false
+        });
+        this.dialogVisible = false;
         this.getData();
         // 设置默认展开的菜单
         this.expandedKey = [this.category.parentId];
+      });
+    },
+    updateCategory() {
+      const { id, name, proUnit, icon } = this.category;
+      console.log(this.category, "更新的category信息1");
+      this.$http({
+        url: "http://localhost:9090/commodity/category/update",
+        method: "post",
+        data: { id, name, proUnit, icon }
+      }).then(() => {
+        this.$message({
+          message: "分类信息更新成功",
+          type: "success"
+        });
+        this.dialogVisible = false;
+        this.getData();
+        console.log(this.category, "更新的category信息2");
+        // 设置默认展开的菜单 这样不用再发送一次请求获取parentId了
+        this.expandedKey = [this.updateNeedParentId];
       });
     },
     remove(node, data) {
@@ -121,6 +159,30 @@ export default {
         .catch(() => {
           console.log("取消了删除~");
         });
+    },
+    edit(data) {
+      this.dialogVisible = true;
+      //发送请求, 到数据库获取当前分类的实时数据
+      console.log(data, "编辑的data");
+      this.$http({
+        url: `http://localhost:9090/commodity/category/info/${data.id}`,
+        method: "get"
+      }).then(({ data }) => {
+        //请求成功
+        console.log("要回显的数据", data);
+        this.dialogType = "edit";
+        //将返回的 data 数据字段信息，分别绑定到 category 对象
+        this.category.name = data.category.name;
+        this.category.id = data.category.id;
+        this.category.icon = data.category.icon;
+        this.category.proUnit = data.category.proUnit;
+        this.updateNeedParentId = data.category.parentId;
+        //不修改的，可以不用绑定
+        // this.category.parentId = data.category.parentId;
+        // this.category.catLevel = data.category.catLevel;
+        // this.category.sort = data.category.sort;
+        // this.category.isShow = data.category.isShow;
+      });
     },
     getData() {
       this.$http({
