@@ -1,8 +1,11 @@
 <template>
   <div>
+    <el-button type="danger" @click="batchDelete">批量删除</el-button>
     <el-tree
+      ref="categoryTree"
       :data="data"
       :props="defaultProps"
+      show-checkbox
       :default-expanded-keys="expandedKey"
       node-key="id"
       :expand-on-click-node="false"
@@ -192,6 +195,36 @@ export default {
         console.log(res, "resres");
         this.data = res.data.data;
       });
+    },
+    batchDelete() {
+      const checkedNodes = this.$refs.categoryTree.getCheckedNodes();
+      console.log("选中的节点为: " + checkedNodes);
+      let ids = []; // 给后台传递的批量删除id
+      let categoryNames = []; //收集分类名，给出提示
+      for (let i = 0; i < checkedNodes.length; i++) {
+        ids.push(checkedNodes[i].id);
+        categoryNames.push(checkedNodes[i].name);
+      }
+      this.$confirm(`是否批量删除【${categoryNames}】菜单?`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http({
+            url: "http://localhost:9090/commodity/category/delete",
+            method: "post",
+            data: this.$http.adornData(ids, false)
+          }).then(({ data }) => {
+            this.$message({
+              message: "家居分类批量删除 OK",
+              type: "success"
+            });
+            //刷新分类列表
+            this.getData();
+          });
+        })
+        .catch(() => {});
     }
   },
   mounted() {
