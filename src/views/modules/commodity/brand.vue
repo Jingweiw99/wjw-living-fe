@@ -63,6 +63,9 @@
         align="center"
         label="logo"
       >
+        <template slot-scope="scope">
+          <img :src="scope.row.logo" style="width: 100px" />
+        </template>
       </el-table-column>
       <el-table-column
         prop="description"
