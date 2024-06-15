@@ -183,8 +183,8 @@ export default {
       this.dataListLoading = true;
       this.$http({
         // 手动改，后面使用gateway统一网关处理
-        url: "http://localhost:9090/commodity/brand/list",
-        // url: this.$http.adornUrl('/commodity/brand/list'),
+        // url: "http://localhost:9090/commodity/brand/list",
+        url: this.$http.adornUrl('/commodity/brand/list'),
         method: "get",
         params: this.$http.adornParams({
           page: this.pageIndex,
@@ -241,8 +241,8 @@ export default {
         }
       ).then(() => {
         this.$http({
-          url: "http://localhost:9090/commodity/brand/delete",
-          // url: this.$http.adornUrl('/commodity/brand/delete'),
+          // url: "http://localhost:9090/commodity/brand/delete",
+          url: this.$http.adornUrl('/commodity/brand/delete'),
           method: "post",
           data: this.$http.adornData(ids, false)
         }).then(({ data }) => {
@@ -266,7 +266,8 @@ export default {
       let { id, isshow } = data;
       //发送请求修改状态
       this.$http({
-        url: "http://localhost:9090/commodity/brand/update",
+        // url: "http://localhost:9090/commodity/brand/update",
+        url: this.$http.adornUrl(`/commodity/brand/update`),
         method: "post",
         data: { id, isshow }
       }).then(({ data }) => {

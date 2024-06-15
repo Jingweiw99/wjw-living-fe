@@ -109,7 +109,8 @@ export default {
     },
     addCategory() {
       this.$http({
-        url: "http://localhost:9090/commodity/category/save",
+        // url: "http://localhost:9090/commodity/category/save",
+        url: this.$http.adornUrl(`/commodity/category/save`),
         method: "post",
         data: this.category
       }).then(() => {
@@ -127,7 +128,8 @@ export default {
       const { id, name, proUnit, icon } = this.category;
       console.log(this.category, "更新的category信息1");
       this.$http({
-        url: "http://localhost:9090/commodity/category/update",
+        // url: "http://localhost:9090/commodity/category/update",
+        url: this.$http.adornUrl(`/commodity/category/update`),
         method: "post",
         data: { id, name, proUnit, icon }
       }).then(() => {
@@ -150,7 +152,8 @@ export default {
       })
         .then(() => {
           this.$http({
-            url: "http://localhost:9090/commodity/category/delete",
+            // url: "http://localhost:9090/commodity/category/delete",
+            url: this.$http.adornUrl(`/commodity/category/delete`),
             method: "post",
             data: [data.id]
           }).then(() => {
@@ -168,7 +171,8 @@ export default {
       //发送请求, 到数据库获取当前分类的实时数据
       console.log(data, "编辑的data");
       this.$http({
-        url: `http://localhost:9090/commodity/category/info/${data.id}`,
+        // url: `http://localhost:9090/commodity/category/info/${data.id}`,
+        url: this.$http.adornUrl(`/commodity/category/info/${data.id}`),
         method: "get"
       }).then(({ data }) => {
         //请求成功
@@ -189,7 +193,8 @@ export default {
     },
     getData() {
       this.$http({
-        url: "http://localhost:9090/commodity/category/list/tree",
+        // url: "http://localhost:9090/commodity/category/list/tree",
+        url: this.$http.adornUrl(`/commodity/category/list/tree`),
         method: "get"
       }).then(res => {
         console.log(res, "resres");
@@ -212,7 +217,8 @@ export default {
       })
         .then(() => {
           this.$http({
-            url: "http://localhost:9090/commodity/category/delete",
+            // url: "http://localhost:9090/commodity/category/delete",
+            url: this.$http.adornUrl(`/commodity/category/delete`),
             method: "post",
             data: this.$http.adornData(ids, false)
           }).then(({ data }) => {

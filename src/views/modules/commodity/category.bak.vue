@@ -103,6 +103,9 @@
 </template>
 
 <script>
+  /**
+   * 原来的管理页面文件，可以不用修改
+   */
   import AddOrUpdate from './category-add-or-update'
   export default {
     data () {

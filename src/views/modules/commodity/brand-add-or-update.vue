@@ -80,10 +80,10 @@ export default {
         this.$refs["dataForm"].resetFields();
         if (this.dataForm.id) {
           this.$http({
-            url: `http://localhost:9090/commodity/brand/info/${
-              this.dataForm.id
-            }`,
-            // url: this.$http.adornUrl(`/commodity/brand/info/${this.dataForm.id}`),
+            // url: `http://localhost:9090/commodity/brand/info/${
+            //   this.dataForm.id
+            // }`,
+            url: this.$http.adornUrl(`/commodity/brand/info/${this.dataForm.id}`),
             method: "get",
             params: this.$http.adornParams()
           }).then(({ data }) => {
@@ -104,10 +104,10 @@ export default {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
           this.$http({
-            url: `http://localhost:9090/commodity/brand/${
-              !this.dataForm.id ? "save" : "update"
-            }`,
-            // url: this.$http.adornUrl(`/commodity/brand/${!this.dataForm.id ? 'save' : 'update'}`),
+            // url: `http://localhost:9090/commodity/brand/${
+            //   !this.dataForm.id ? "save" : "update"
+            // }`,
+            url: this.$http.adornUrl(`/commodity/brand/${!this.dataForm.id ? 'save' : 'update'}`),
             method: "post",
             data: this.$http.adornData({
               id: this.dataForm.id || undefined,
