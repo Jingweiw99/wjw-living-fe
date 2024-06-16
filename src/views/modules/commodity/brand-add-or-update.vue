@@ -53,21 +53,56 @@ export default {
         name: "",
         logo: "",
         description: "",
-        isshow: "",
+        isshow: 1, // 现在打开默认值是1，展示
         firstLetter: "",
         sort: ""
       },
+      /*
+      1. 前端校验
+
+      1) 要求值不能为空
+      2) 增加自定义检索首字母，必须是 a-z 或者 A-Z
+      3) 排序值 sort 必须是大于等于 0 的整数
+      参考文档 elementUI-Form 表单-表单验证
+      */
       dataRule: {
         name: [{ required: true, message: "品牌名不能为空", trigger: "blur" }],
-        logo: [{ required: true, message: "logo不能为空", trigger: "blur" }],
+        logo: [{ required: true, message: "logo 不能为空", trigger: "blur" }],
         description: [
           { required: true, message: "说明不能为空", trigger: "blur" }
         ],
         isshow: [{ required: true, message: "显示不能为空", trigger: "blur" }],
         firstLetter: [
-          { required: true, message: "检索首字母不能为空", trigger: "blur" }
+          //{required: true, message: '检索首字母不能为空', trigger: 'blur'}
+
+          {
+            validator: (rule, value, callback) => {
+              if (value == "") {
+                callback(new Error("首字母必须填写"));
+              } else if (!/^[a-zA-Z]$/.test(value)) {
+                callback(new Error("首字母必须 a-z 或者 A-Z 之间"));
+              } else {
+                callback();
+              }
+            },
+            trigger: "blur"
+          }
         ],
-        sort: [{ required: true, message: "排序不能为空", trigger: "blur" }]
+        sort: [
+          //{required: true, message: '排序不能为空', trigger: 'blur'}
+          {
+            validator: (rule, value, callback) => {
+              if (value == "") {
+                callback(new Error("排序值须填写"));
+              } else if (!/^(([1-9]\d*)|(0))$/.test(value)) {
+                callback(new Error("排序值须是大于等于 0 的整数"));
+              } else {
+                callback();
+              }
+            },
+            trigger: "blur"
+          }
+        ]
       }
     };
   },
@@ -83,7 +118,9 @@ export default {
             // url: `http://localhost:9090/commodity/brand/info/${
             //   this.dataForm.id
             // }`,
-            url: this.$http.adornUrl(`/commodity/brand/info/${this.dataForm.id}`),
+            url: this.$http.adornUrl(
+              `/commodity/brand/info/${this.dataForm.id}`
+            ),
             method: "get",
             params: this.$http.adornParams()
           }).then(({ data }) => {
@@ -107,7 +144,9 @@ export default {
             // url: `http://localhost:9090/commodity/brand/${
             //   !this.dataForm.id ? "save" : "update"
             // }`,
-            url: this.$http.adornUrl(`/commodity/brand/${!this.dataForm.id ? 'save' : 'update'}`),
+            url: this.$http.adornUrl(
+              `/commodity/brand/${!this.dataForm.id ? "save" : "update"}`
+            ),
             method: "post",
             data: this.$http.adornData({
               id: this.dataForm.id || undefined,
