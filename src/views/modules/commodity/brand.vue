@@ -267,7 +267,8 @@ export default {
       //发送请求修改状态
       this.$http({
         // url: "http://localhost:9090/commodity/brand/update",
-        url: this.$http.adornUrl(`/commodity/brand/update`),
+        // 后台分组校验添加了这个接口
+        url: this.$http.adornUrl(`/commodity/brand/update/isshow`),
         method: "post",
         data: { id, isshow }
       }).then(({ data }) => {
