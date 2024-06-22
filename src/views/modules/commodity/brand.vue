@@ -123,6 +123,12 @@
           <el-button
             type="text"
             size="small"
+            @click="relateCategoryHandle(scope.row.id)"
+            >关联分类</el-button
+          >
+          <el-button
+            type="text"
+            size="small"
             @click="addOrUpdateHandle(scope.row.id)"
             >修改</el-button
           >
@@ -151,6 +157,63 @@
       ref="addOrUpdate"
       @refreshDataList="getDataList"
     ></add-or-update>
+
+    <!-- 品牌和分类关联的对话框 -->
+    <el-dialog
+      title="关联分类"
+      :visible.sync="cateRelationDialogVisible"
+      width="30%"
+    >
+      <el-popover placement="right-end" v-model="popCatelogSelectVisible">
+        <el-cascader
+          v-model="cascadedCategoryId"
+          :options="categorys"
+          :props="props"
+        ></el-cascader>
+        <div style="text-align: right; margin: 0">
+          <el-button
+            size="mini"
+            type="text"
+            @click="popCatelogSelectVisible = false"
+            >取 消</el-button
+          >
+          <el-button
+            type="primary"
+            size="mini"
+            @click="addBrandCategoryRelation"
+          >
+            确 定</el-button
+          >
+        </div>
+        <el-button slot="reference">新增关联</el-button>
+      </el-popover>
+      <el-table :data="cateRelationTableData" style="width: 100%">
+        <el-table-column prop="id" label="#"></el-table-column>
+        <el-table-column prop="brandName" label="品牌名"></el-table-column>
+        <el-table-column prop="categoryName" label="分类名"></el-table-column>
+        <el-table-column
+          fixed="right"
+          header-align="center"
+          align="center"
+          label="操作"
+        >
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              size="small"
+              @click="deleteCateRelationHandle(scope.row.id, scope.row.brandId)"
+              >移除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cateRelationDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="cateRelationDialogVisible = false">
+          确 定
+        </el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -168,11 +231,27 @@ export default {
       totalPage: 0,
       dataListLoading: false,
       dataListSelections: [],
-      addOrUpdateVisible: false
+      addOrUpdateVisible: false,
+
+      cateRelationDialogVisible: false,
+      cateRelationTableData: [],
+      cascadedCategoryId: [],
+      popCatelogSelectVisible: false,
+      props: {
+        //显示返回的家居分类的哪些字段/信息
+        value: "id",
+        label: "name",
+        children: "childrenCategories"
+      },
+      categorys: [], //所有的家居分类
+      brandId: 0
     };
   },
   components: {
     AddOrUpdate
+  },
+  created() {
+    this.getCategorys();
   },
   activated() {
     this.getDataList();
@@ -182,9 +261,7 @@ export default {
     getDataList() {
       this.dataListLoading = true;
       this.$http({
-        // 手动改，后面使用gateway统一网关处理
-        // url: "http://localhost:9090/commodity/brand/list",
-        url: this.$http.adornUrl('/commodity/brand/list'),
+        url: this.$http.adornUrl("/commodity/brand/list"),
         method: "get",
         params: this.$http.adornParams({
           page: this.pageIndex,
@@ -242,7 +319,7 @@ export default {
       ).then(() => {
         this.$http({
           // url: "http://localhost:9090/commodity/brand/delete",
-          url: this.$http.adornUrl('/commodity/brand/delete'),
+          url: this.$http.adornUrl("/commodity/brand/delete"),
           method: "post",
           data: this.$http.adornData(ids, false)
         }).then(({ data }) => {
@@ -267,7 +344,6 @@ export default {
       //发送请求修改状态
       this.$http({
         // url: "http://localhost:9090/commodity/brand/update",
-        // 后台分组校验添加了这个接口
         url: this.$http.adornUrl(`/commodity/brand/update/isshow`),
         method: "post",
         data: { id, isshow }
@@ -276,6 +352,75 @@ export default {
           type: "success",
           message: "显示更新 OK"
         });
+      });
+    },
+    //显示关联品牌和分类的相关方法
+    getCategorys() {
+      this.$http({
+        url: this.$http.adornUrl(`/commodity/category/list/tree`),
+        method: "get"
+      }).then(({ data }) => {
+        this.categorys = data.data;
+      });
+    },
+    relateCategoryHandle(id) {
+      console.log("id~= ", id);
+      this.cateRelationDialogVisible = true;
+      //得到 brandId 的值
+      this.brandId = id;
+      this.getCategoryBrandRelation();
+    },
+    //处理添加分类和品牌关系
+    addBrandCategoryRelation() {
+      this.popCatelogSelectVisible = false;
+      //检测数据得到数据是否正确
+      console.log(
+        "brandId=",
+        this.brandId,
+        "categoryId= ",
+        this.cascadedCategoryId[this.cascadedCategoryId.length - 1],
+        this.cateRelationTableData
+      );
+      this.$http({
+        url: this.$http.adornUrl(`/commodity/categorybrandrelation/save`),
+        method: "post",
+        data: this.$http.adornData(
+          {
+            brandId: this.brandId,
+            categoryId: this.cascadedCategoryId[
+              this.cascadedCategoryId.length - 1
+            ]
+          },
+          false
+        )
+      }).then(res => {
+        console.log(res, "resres");
+      });
+    },
+    //显示分类和品牌的关联关系
+    getCategoryBrandRelation() {
+      this.$http({
+        //如果启动了网关服务, 则 url 修改成走网关服务即可
+        url: this.$http.adornUrl(`/commodity/categorybrandrelation/brand/list`),
+        method: "get",
+        params: this.$http.adornParams({
+          brandId: this.brandId
+        })
+      }).then(({ data }) => {
+        console.log("data.data=", data);
+        this.cateRelationTableData = data.data;
+      });
+    },
+    deleteCateRelationHandle(id, brandId) {
+      console.log(id, brandId);
+      // /commodity/categorybrandrelation/delete
+      this.$http({
+        //如果启动了网关服务, 则 url 修改成走网关服务即可
+        url: this.$http.adornUrl(`/commodity/categorybrandrelation/delete`),
+        method: "post",
+        data: this.$http.adornData([id], false)
+      }).then(({ data }) => {
+        this.getCategoryBrandRelation();
       });
     }
   }
